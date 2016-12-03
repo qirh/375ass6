@@ -28,10 +28,25 @@
 #include "genasm.h"
 #include "codegen.h"
 
+#include <limits.h>
+#include <float.h>
+
 void genc(TOKEN code);
 
 /* Set DEBUGGEN to 1 for debug printouts of code generation */
-#define DEBUGGEN 0
+#define DEBUGGEN   0
+#define INTREG    8
+#define FLOREG    24
+#define NUMREG    32
+
+double floreg = -DBL_MAX;
+int floregnum = -1;
+
+int reg[32] = {
+                0, 0, 0, 0, 0, 0, 0, 0,   //int - r7d
+                0, 0, 0, 0, 0, 0, 0, 0,   //float - r15d
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+              };
 
 int nextlabel;    /* Next available label number */
 int stkframesize;   /* total stack frame size */
@@ -62,41 +77,60 @@ void gencode(TOKEN pcode, int varsize, int maxlabel)
 /* Need a type parameter or two versions for INTEGER or REAL */
 int getreg(int kind)
   {
-    /*     ***** fix this *****   */
+    int i = 0;
+    int end = INTREG;
+    if (kind !=  INTEGER && kind != POINTER) {
+        i = 16;
+        end = NUMREG;
+    }
+
+    for (; i < end; i++) {
+        if (reg[i] == 0) {
+            reg[i] = 1;
+            return i;
+        }
+    }
+
      return RBASE;
   }
 
 /* Trivial version */
 /* Generate code for arithmetic expression, return a register number */
-int genarith(TOKEN code)
-  {   int num, reg;
-     if (DEBUGGEN)
-       { printf("genarith\n");
-	 dbugprinttok(code);
-       };
-      switch ( code->tokentype )
-       { case NUMBERTOK:
-           switch (code->datatype)
-             { case INTEGER:
-		 num = code->intval;
-		 reg = getreg(WORD);
-		 if ( num >= MINIMMEDIATE && num <= MAXIMMEDIATE )
-		   asmimmed(MOVL, num, reg);
-		 break;
-	       case REAL:
-    /*     ***** fix this *****   */
-		 break;
-	       }
-	   break;
-       case IDENTIFIERTOK:
-    /*     ***** fix this *****   */
-	   break;
-       case OPERATOR:
-    /*     ***** fix this *****   */
-	   break;
-       };
-     return reg;
+int genarith(TOKEN code) {   
+  int num, reg, regl, regr;
+  SYMBOL tmp;
+
+  if (DEBUGGEN) { 
+    printf("genarith\n");
+    dbugprinttok(code);
+  }
+  
+  if (code->tokentype == NUMBERTOK) { 
+    if (code->datatype == INTEGER) { 
+      num = code->intval;
+      reg = getreg(WORD);
+      if (num >= MINIMMEDIATE && num <= MAXIMMEDIATE)
+        asmimmed(MOVL, num, reg);
     }
+    if (code->datatype == REAL) { 
+      reg = getreg(REAL);
+      floreg = code->realval;
+      floregnum = reg;
+
+      makeflit(code->realval, nextlabel);
+      asmldflit(MOVSD, nextlabel++, reg);
+
+    }
+  }
+  
+  else if(code->tokentype == IDENTIFIERTOK) {
+  }
+
+  else if(code->tokentype == OPERATOR) {
+  }
+
+  return reg;
+}
 
 
 /* Generate code for a Statement from an intermediate-code form */
@@ -106,26 +140,26 @@ void genc(TOKEN code)
      SYMBOL sym;
      if (DEBUGGEN)
        { printf("genc\n");
-	 dbugprinttok(code);
+   dbugprinttok(code);
        };
      if ( code->tokentype != OPERATOR )
         { printf("Bad code token");
-	  dbugprinttok(code);
-	};
+    dbugprinttok(code);
+  };
      switch ( code->whichval )
        { case PROGNOP:
-	   tok = code->operands;
-	   while ( tok != NULL )
-	     {  genc(tok);
-		tok = tok->link;
-	      };
-	   break;
-	 case ASSIGNOP:                   /* Trivial version: handles I := e */
-	   lhs = code->operands;
-	   rhs = lhs->link;
-	   reg = genarith(rhs);              /* generate rhs into a register */
-	   sym = lhs->symentry;              /* assumes lhs is a simple var  */
-	   offs = sym->offset - stkframesize; /* net offset of the var   */
+     tok = code->operands;
+     while ( tok != NULL )
+       {  genc(tok);
+    tok = tok->link;
+        };
+     break;
+   case ASSIGNOP:                   /* Trivial version: handles I := e */
+     lhs = code->operands;
+     rhs = lhs->link;
+     reg = genarith(rhs);              /* generate rhs into a register */
+     sym = lhs->symentry;              /* assumes lhs is a simple var  */
+     offs = sym->offset - stkframesize; /* net offset of the var   */
            switch (code->datatype)            /* store value into lhs  */
              { case INTEGER:
                  asmst(MOVL, reg, offs, lhs->stringval);
@@ -133,5 +167,5 @@ void genc(TOKEN code)
                  /* ...  */
              };
            break;
-	 };
+   };
   }

@@ -7,6 +7,6 @@ https://www.cs.utexas.edu/users/novak/asg-parse.html
 
 
 make compiler
-compiler < test_file.pas > test_file.s
+./compiler <test_file.pas> test_file.s
 cc driver.c test_file.s -lm
 a.out

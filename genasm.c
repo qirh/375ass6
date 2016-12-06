@@ -1,9 +1,12 @@
-/* genasm.c       Generate Assembly Code for X86    ; 05 Feb 16   */
+/* genasm.c       Generate Assembly Code for X86    ; 15 May 14   */
 
-/* Copyright (c) 2016 Gordon S. Novak Jr. and The University of Texas at Austin
+/* Copyright (c) 2013 Gordon S. Novak Jr. and The University of Texas at Austin
     */
 
+/* ***** expand register tables for 16 integer registers, r8 - r15   */
+
 /* Routines for use with CS 375 Code Generation assignment for X86. */
+/* Also fix FBASE and FMAX in genasm.h.   */
 
 /* We assume Linux assembly language conventions.   */
 
@@ -29,7 +32,7 @@
    06 Jul 12; 10 Jul 12; 16 Jul 12; 18 Jul 12; 23 Jul 12; 24 Jul 12;
    26 Jul 12; 31 Jul 12; 01 Aug 12; 03 Aug 12; 06 Aug 12; 07 Aug 12;
    08 Aug 12; 10 Aug 12; 13 Aug 12; 14 May 13; 09 Jul 13; 25 Apr 14
-   02 May 14; 15 May 14; 17 Apr 15; 05 May 15; 07 May 15
+   02 May 14
   */
 
 #include <stdio.h>
@@ -82,9 +85,7 @@ char* instcompr[] = {"->", "->", "->", "sign-extend", "+", "-", "*", "/",
 /*                     8     9     10     11     12        13   14   15  */
                      " and", "-", "or", "notl", "compare", "+", "-", "*",
 /*                     16    17      18      19      */
-                     "/", "-", "compare", "compare",
-/*   20      21       22      23      24      25     26     */
-    "+",     "-",     "*",    "&",   "negq", "orq", "notq" };
+                       "/", "-", "compare", "compare" };
 char* topcode[] = {
   "# ---------------- Beginning of Generated Code --------------------",
   ""};
@@ -119,7 +120,7 @@ char* bottomcodeb[] = {
   ""};
 
 char* bottomcodec[] = { 
-  "        .ident  \"CS 375 Compiler - Spring 2016\"",
+  "        .ident  \"CS 375 Compiler - Summer 2014\"",
   /* "        .section     .note.GNU-stack,\"\",@progbits", /* need this? */
   ""};
 
@@ -221,8 +222,8 @@ void asmimmed(int inst, int ival, int reg)
 {   printf("\t%s\t$%d,%s", instpr[inst], ival, regnm(reg, inst));
     if ( inst == MOVL || inst == MOVSD )
       printf("         \t#  %d -> %s\n", ival, regnm(reg, inst));
-    else printf("         \t#  %s %s %d -> %s\n",
-                regnm(reg, inst), instcompr[inst], ival, regnm(reg, inst));
+    else printf("         \t#  %s %d -> %s\n",
+                instcompr[inst], ival, regnm(reg, inst));
   }
 
 /* Generate an instruction with just the op. */
@@ -445,6 +446,9 @@ void outlits()
        { d = fliterals[i];
          ida = lefth(d);
          idb = righth(d);
+
+//printf("OUTLIT(): d: %f\nida: %d\nidb: %d\n", d, ida, idb);
+
          printf("\t.align  8\n");
          printf(".LC%d:\n", flabels[i]);
 	 if ( ida == 0 && idb != 0)

@@ -41,12 +41,20 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include "symtab.h"
 #include "token.h"
 
-
 /* BASEOFFSET is the offset for the first variable */
 #define BASEOFFSET 0
+
+void add_sym(SYMBOL sym);
+void destroy_symlist(void);
+//void insert_label(int internal_label_num, int external_label_num);
+void insert_label(int internal_label_num, TOKEN label_tok);
+int user_label_exists(TOKEN label_tok);
+int get_internal_label_num(int external_label_num);
+void destroy_user_labels();
 
 int    blocknumber = 0;       /* Number of current block being compiled */
 int    contblock[MAXBLOCKS];  /* Containing block for each block        */
@@ -59,12 +67,20 @@ int basicsizes[5] =      { 4,       8,       1,         4,        8 };
 
 char* symprint[10]  = {" ", "BASIC", "CONST", "VAR", "SUBRANGE",
                        "FUNCTION", "ARRAY", "RECORD", "TYPE", "POINTER"};
+
 int symsize[10] = { 1, 5, 5, 3, 8, 8, 5, 6, 4, 7 };
 
+//long userlabels[MAXBLOCKS];
+
+TOKENNODE user_labels = NULL;
+TOKENNODE curr_label = NULL;
 
 SYMBOL symalloc()           /* allocate a new symbol record */
   { 
-    return((SYMBOL) calloc(1,sizeof(SYMBOLREC)));
+	SYMBOL out = calloc(1, sizeof(SYMBOLREC));
+	add_sym(out);
+//    return((SYMBOL) calloc(1,sizeof(SYMBOLREC)));
+	return out;
   }
 
 /* Make a symbol table entry with the given name */
@@ -90,6 +106,81 @@ SYMBOL insertsym(char name[])
     if (DEBUG) printf("insertsym %8s %ld\n", name, (long) sym);
     return sym;
   }
+/*
+void insert_label(int internal_label_num, int external_label_num) {
+	if (external_label_num < 0) {
+		// ??? should be allowed
+	}
+	else if (internal_label_num < 0) {
+		// ???
+	}
+	else if (userlabels[internal_label_num] != LONG_MAX) {
+		printf("Error: attempting to insert internal label %d, but internal label %d already exists\n", internal_label_num, internal_label_num);
+	}
+	else {
+		userlabels[internal_label_num] = external_label_num;	
+	}
+}
+*/
+void insert_label(int internal_label_num, TOKEN label_tok) {
+	if (label_tok->intval < 0) {
+		// ??? should be allowed
+	}
+	else if (internal_label_num < 0) {
+		// ???
+	}
+	else if (user_label_exists(label_tok)) {
+		return;
+	}	// check to see if label num already exists?
+	else {
+//		dbugprinttok(label_tok);
+		if (!user_labels) {
+			user_labels = malloc(sizeof(struct toknode));
+			user_labels->internal_label_num = internal_label_num;
+			user_labels->token = label_tok;
+			user_labels->next = NULL;
+			curr_label = user_labels;
+		}
+		else {
+			TOKENNODE curr = malloc(sizeof(struct toknode));
+			curr->internal_label_num = internal_label_num;
+			curr->token = label_tok;
+			curr->next = NULL;
+			curr_label->next = curr;
+			curr_label = curr;
+		}
+	}
+}
+
+int user_label_exists(TOKEN label_tok) {
+	if (label_tok->intval < 0) {
+		printf("Warning: searching for user label with negative value (%d)\n", label_tok->intval);
+	}
+
+	int exists = get_internal_label_num(label_tok->intval);
+	if (exists == -1) {
+		return 0;
+	}
+	return 1;
+}
+
+// do NOT return ->token for reuse, otherwise the label can only be goto'd once
+int get_internal_label_num(int external_label_num) {
+	if (external_label_num < 0) {
+		printf("Error: cannot find negative label number %d\n", external_label_num);
+		return -1;
+	}
+	else {
+		TOKENNODE temp = user_labels;
+		while (temp) {
+			if (temp->token->intval == external_label_num) {
+				return (temp->internal_label_num);
+			}
+			temp = temp->next;
+		}
+		return -1;
+	}
+}
 
 /* Search one level of the symbol table for the given name.         */
 /* Result is a pointer to the symbol table entry or NULL            */
@@ -115,6 +206,24 @@ SYMBOL searchst(char name[])
     if (DEBUG) printf("searchst  %8s %ld\n", name, (long) sym);
     return sym;
   }
+/*
+int get_internal_label_num(int external_label_num) {
+	if (external_label_num < 0) {
+		printf("Error: cannot find negative label number %d\n", external_label_num);
+		return -1;
+	}
+	else {
+		int i;
+		for (i = 0; i < MAXBLOCKS; i++) {
+//		printf("%ld\n", userlabels[i]);
+			if (userlabels[i] == external_label_num) {
+				return i;
+			}
+		}
+		return -1;
+	}
+}
+*/
 
 /* Search for symbol, insert if not there. */
 SYMBOL searchins(char name[])
@@ -182,30 +291,30 @@ void pprintsym(SYMBOL sym, int col)   /* print type expression in prefix form */
           printf ("(%s", symprint[sym->kind]);
           nextcol = col + 2 + symsize[sym->kind];
           if ( sym->kind == ARRAYSYM )
-            {  printf(" %3d ..%4d", sym->lowbound, sym->highbound);
+          {    printf(" %3d ..%4d", sym->lowbound, sym->highbound);
                nextcol = nextcol + 11;
-	     }
+	        }
           opnds = sym->datatype;
-	  start = 0;
+	        start = 0;
           done = 0;
-	  while ( opnds != NULL && done == 0 )
-	    { if (start == 0) 
-		 printf(" ");
-	         else { printf("\n");
-			for (i = 0; i < nextcol; i++) printf(" ");
-		      };
-	      if ( sym->kind == RECORDSYM )
-		 {  printf("(%s ", opnds->namestring);
-		    pprintsym(opnds, nextcol + 2
-			             + strlength(opnds->namestring));
-		    printf(")");
-		 }
-	        else pprintsym(opnds, nextcol);
-	      start = 1;
-              if ( sym->kind == ARRAYSYM ) done = 1;
-	      opnds = opnds->link;
-	    }
-	  printf(")");
+	        while ( opnds != NULL && done == 0 )
+	           { if (start == 0) 
+		              printf(" ");
+	             else { printf("\n");
+			            for (i = 0; i < nextcol; i++) printf(" ");
+		           };
+	             if ( sym->kind == RECORDSYM )
+		              {  printf("(%s ", opnds->namestring);
+		                 pprintsym(opnds, nextcol + 2
+			                     + strlength(opnds->namestring));
+		                 printf(")");
+		              }
+	             else pprintsym(opnds, nextcol);
+	             start = 1;
+               if ( sym->kind == ARRAYSYM ) done = 1;
+	             opnds = opnds->link;
+	           } // while
+	        printf(")");
           break;
         default:
           if ( sym->datatype != NULL) pprintsym(sym->datatype, col);
@@ -362,4 +471,64 @@ void initsyms()
      sym = insertfn("eof", boolsym, NULL);
      blocknumber = 1;             /* Start the user program in block 1 */
      contblock[1] = 0;
+
+//     int i;
+//     for (i = 0; i < MAXBLOCKS; i++) {
+//     	userlabels[i] = LONG_MAX;
+//     }
    }
+
+SYMNODE symlist = NULL;
+SYMNODE curr_sym = NULL;
+
+/* Add the SYMBOL specified by the argument
+	to the list of all SYMBOLs ever alloc'd. */
+void add_sym(SYMBOL sym) {
+	if (!sym) {
+		return;
+	}
+
+	if (!symlist) {
+		symlist = malloc(sizeof(struct symnode));
+		symlist->sym = sym;
+		symlist->next = NULL;
+		curr_sym = symlist;
+	}
+	else {
+		SYMNODE curr = malloc(sizeof(struct symnode));
+		curr->sym = sym;
+		curr->next = NULL;
+		curr_sym->next = curr;
+		curr_sym = curr;
+	}
+}
+
+/* Reclaim memory. */
+void destroy_symlist() {
+	SYMNODE curr = symlist;
+	SYMNODE next = symlist;
+
+	while (curr) {
+//printf("Now deleting sym %s\n", curr->sym->namestring);
+		next = curr->next;
+		if (curr->sym) {
+			free(curr->sym);
+		}
+		free(curr);
+		curr = next;
+	}
+}
+
+void destroy_user_labels() {
+	TOKENNODE curr = user_labels;
+	TOKENNODE next = user_labels;
+
+	while (curr) {
+		next = curr->next;
+		free(curr);
+		curr = next;
+	}	
+}
+
+
+

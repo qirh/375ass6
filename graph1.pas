@@ -1,4 +1,4 @@
-{ program 4.9 from Jensen & Wirth       -- file graph1.pas }
+{ program 4.9 from Jensen & Wirth       -- file pastst.pas }
 
 program graph1(output);
 const d = 0.0625; {1/16, 16 lines for interval [x,x+1]}
@@ -15,3 +15,28 @@ begin
       writeln('*')
    end
 end.
+
+{ EXPECTED OUTPUT:
+
+(program graph1
+         (progn output)
+         (progn (:= i 0)
+                (label 1)
+                (if (<= i 32)
+                    (progn (:= x (* 6.250000e-02
+                                    (float i)))
+                           (:= y (* (funcall exp (- x))
+                                    (funcall sin (* 6.283180e+00 x))))
+                           (:= n (fix (+ (funcall round
+                                                  (* 3.200000e+01 y))
+                                         3.400000e+01)))
+                           (progn (label 0)
+                                  (funcall write ' ')
+                                  (:= n (- n 1))
+                                  (if (= n 0)
+                                      (progn)
+                                      (goto 0)))
+                                  (funcall writeln '*')
+                                  (:= i (+ i 1))
+                                  (goto 1)))))
+}

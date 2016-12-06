@@ -1,4 +1,4 @@
-/* token.h           token definitions         ; 24 Dec 12  */
+/* token.h           token definitions          01 Aug 12  */
 
 /* Copyright (c) 2012 Gordon S. Novak Jr. and
    The University of Texas at Austin. */
@@ -20,8 +20,9 @@
 ; along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-/* 09 Feb 00; 06 Jul 12; 01 Aug 12
+/* 09 Feb 00; 06 Jul 12
  */
+
                                  /* token data structure */
 typedef struct tokn {
   int    tokentype;  /* OPERATOR, DELIMITER, RESERVED, etc */
@@ -84,8 +85,6 @@ typedef struct tokn {
 #define STRINGTYPE 2
 #define BOOLETYPE  3
 #define POINTER    4
-
-#define RECORDALIGN    8        /* record size must be a multiple of this */
 
 #define IDENTIFIER 258          /* token types for use with YACC */
 #define STRING 259
@@ -157,3 +156,20 @@ typedef struct tokn {
 #define WITH 316
 
 #define YYTOKENTYPE 0
+
+/* A struct to be used as a linked list for tokens.
+   Used in this program to keep track of all tokens
+   ever created in order to free them as well as for
+   user-created labels (see symtab.c). */
+typedef struct toknode {
+	struct tokn * token;
+	int internal_label_num;
+	struct toknode *next;
+} *TOKENNODE;
+
+
+
+
+
+
+

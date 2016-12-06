@@ -22,7 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <limits.h>
+#include <float.h>
 #include "token.h"
+
+//void add_tok(TOKEN tok);
+//void destroy_toklist(void);
 
 /* These arrays are defined for printing debugging information.
    You may use them if you wish, or you may copy them and
@@ -41,12 +46,68 @@ static char *resprnt[] = { " ", "array", "begin", "case", "const", "do",
                            "repeat", "set", "then", "to", "type",
 		           "until", "var", "while", "with" };
 
+void add_tok(TOKEN tok);
+void destroy_toklist(void);
+
+TOKENNODE toklist = NULL;
+TOKENNODE curr_tok = NULL;
+
 TOKEN talloc()           /* allocate a new token record */
   { TOKEN tok;
-    tok = (TOKEN) calloc(1,sizeof(struct tokn));
-    if ( tok != NULL ) return (tok);
-       else printf("talloc failed.");
+    tok = calloc(1,sizeof(struct tokn));
+    if (tok != NULL) {
+    	add_tok(tok);	// add to list of all toks ever alloc'd
+    	tok->link = NULL;
+    	tok->operands = NULL;
+    	tok->stringval[0] = '\0';
+    	tok->whichval = -1;
+    	tok->intval = INT_MIN;
+    	tok->realval = -DBL_MIN;
+    	return tok;
+    }
+    else {
+    	printf("talloc failed.\n");
+    }
+//    if ( tok != NULL ) addtok(tok); return (tok);
+//       else printf("talloc failed.");
   }
+
+/* Add the TOKEN specified by the argument
+	to the list of all TOKENs ever alloc'd. */
+void add_tok(TOKEN tok) {
+	if (!tok) {
+		return;
+	}
+
+	if (!toklist) {
+		toklist = malloc(sizeof(struct toknode));
+		toklist->token = tok;
+		toklist->next = NULL;
+		curr_tok = toklist;
+	}
+	else {
+		TOKENNODE curr = malloc(sizeof(struct toknode));
+		curr->token = tok;
+		curr->next = NULL;
+		curr_tok->next = curr;
+		curr_tok = curr;
+	}
+}
+
+/* Reclaim memory. */
+void destroy_toklist() {
+	TOKENNODE curr = toklist;
+	TOKENNODE next = toklist;
+
+	while (curr) {
+		next = curr->next;
+		if (curr->token) {
+			free(curr->token);
+		}
+		free(curr);
+		curr = next;
+	}
+}
 
 void printtoken(TOKEN tok)
   {

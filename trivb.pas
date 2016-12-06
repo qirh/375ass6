@@ -24,5 +24,6 @@ var i,lim : integer;
 begin
    lim := 7;
    for i := 0 to lim do
+{	for i := 7 downto 1 do }
       writeln('*')
 end.

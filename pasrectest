@@ -1,0 +1,9 @@
+clear
+make compiler
+echo ''
+compiler < pasrec.pas
+compiler < pasrec.pas > pasrectest.s
+cc driver.c pasrectest.s -lm
+echo ''
+a.out
+echo ''

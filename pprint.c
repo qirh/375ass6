@@ -30,7 +30,9 @@
 #include <ctype.h>
 #include <stdio.h>
 #include "token.h"
+#include "symtab.h"
 #include "lexan.h"
+#include "parse.h"
 
 #define PRINTEXPRDEBUG 0     /* Set to 1 to print each node in printexpr */
 
@@ -42,6 +44,33 @@ int opsize[] = {1, 1, 1, 1, 1, 2, 1, 2, 1, 2,
                   2, 1, 1, 1, 3, 2, 3, 3, 3,
                   2, 2, 4, 5, 5, 7,
                   4, 7, 5, 3 };
+
+void dbugprintarg(TOKEN tok);
+void dbugprint1arg(TOKEN a);
+void dbugprint2args(TOKEN a, TOKEN b);
+void dbugprint3args(TOKEN a, TOKEN b, TOKEN c);
+void dbugprint4args(TOKEN a, TOKEN b, TOKEN c, TOKEN d);
+void dbugprint5args(TOKEN a, TOKEN b, TOKEN c, TOKEN d, TOKEN e);
+void dbugprint6args(TOKEN a, TOKEN b, TOKEN c, TOKEN d, TOKEN e, TOKEN f);
+
+void dbugprinttok1(TOKEN tok);
+void dbugprint1tok(TOKEN a);
+void dbugprint2toks(TOKEN a, TOKEN b);
+void dbugprint3toks(TOKEN a, TOKEN b, TOKEN c);
+void dbugprint4toks(TOKEN a, TOKEN b, TOKEN c, TOKEN d);
+void dbugprint5toks(TOKEN a, TOKEN b, TOKEN c, TOKEN d, TOKEN e);
+void dbugprint6toks(TOKEN a, TOKEN b, TOKEN c, TOKEN d, TOKEN e, TOKEN f);
+
+void dbugprintsym(SYMBOL sym);
+void dbugprint1sym(SYMBOL a);
+void dbugprint2syms(SYMBOL a, SYMBOL b);
+void dbugprint3syms(SYMBOL a, SYMBOL b, SYMBOL c);
+void dbugprint4syms(SYMBOL a, SYMBOL b, SYMBOL c, SYMBOL d);
+void dbugprint5syms(SYMBOL a, SYMBOL b, SYMBOL c, SYMBOL d, SYMBOL e);
+void dbugprint6syms(SYMBOL a, SYMBOL b, SYMBOL c, SYMBOL d, SYMBOL e, SYMBOL f);
+
+void dbugprintlinks(TOKEN idlist);
+void dbugprintoperands(TOKEN idlist);
 
 void debugprinttok(TOKEN tok)           /* print a token for debugging */
   { if (tok == NULL)
@@ -134,7 +163,7 @@ void printexpr(TOKEN tok, int col)     /* print an expression in prefix form */
 		      for (i = 0; i < nextcol; i++) printf(" ");
 		    }
 	    printexpr(opnds, nextcol);
-	    if ( opnds->tokentype == IDENTIFIERTOK && nextcol < 60 )
+	    if ( opnds->tokentype == IDENTIFIERTOK && nextcol < 150 )
 	       nextcol = nextcol + 1 + strlength(opnds->stringval);
 	       else start = 1;
 	    opnds = opnds->link;
@@ -187,3 +216,209 @@ void dbugprintexpr(TOKEN tok) /* print an expression in 'nice' debugging form */
 	      }
       }
   }
+
+void dbugprintarg(TOKEN tok) {
+  printf("  ");
+  if (tok) {
+    dbugprinttok(tok);
+  }
+  else {
+    printf(" NULL\n");
+  }
+}
+
+void dbugprint1arg(TOKEN a) {
+  if (DB_PRINT_ARGS) {
+    printf(" Arguments:\n");
+    dbugprintarg(a);
+    printf("\n");   
+  }
+}
+
+void dbugprint2args(TOKEN a, TOKEN b) {
+  if (DB_PRINT_ARGS) {
+    printf(" Arguments:\n");
+    dbugprintarg(a);
+    dbugprintarg(b);
+    printf("\n");
+  }
+}
+
+void dbugprint3args(TOKEN a, TOKEN b, TOKEN c) {
+  if (DB_PRINT_ARGS) {
+    printf(" Arguments:\n");
+    dbugprintarg(a);
+    dbugprintarg(b);
+    dbugprintarg(c);
+    printf("\n");
+  }
+}
+
+void dbugprint4args(TOKEN a, TOKEN b, TOKEN c, TOKEN d) {
+  if (DB_PRINT_ARGS) {
+    printf(" Arguments:\n");
+    dbugprintarg(a);
+    dbugprintarg(b);
+    dbugprintarg(c);
+    dbugprintarg(d);   
+    printf("\n"); 
+  }
+}
+
+void dbugprint5args(TOKEN a, TOKEN b, TOKEN c, TOKEN d, TOKEN e) {
+  if (DB_PRINT_ARGS) {
+    printf(" Arguments:\n");
+    dbugprintarg(a);
+    dbugprintarg(b);
+    dbugprintarg(c);
+    dbugprintarg(d);
+    dbugprintarg(e);
+    printf("\n");
+  }
+}
+
+void dbugprint6args(TOKEN a, TOKEN b, TOKEN c, TOKEN d, TOKEN e, TOKEN f) {
+  if (DB_PRINT_ARGS) {
+    printf(" Arguments:\n");
+    dbugprintarg(a);
+    dbugprintarg(b);
+    dbugprintarg(c);
+    dbugprintarg(d);
+    dbugprintarg(e);
+    dbugprintarg(f);
+    printf("\n");   
+  }
+}
+
+void dbugprinttok1(TOKEN tok) {
+    printf("  ");
+    if (tok) {
+      dbugprinttok(tok);
+    }
+    else {
+      printf(" NULL\n");
+    }
+}
+
+void dbugprint1tok(TOKEN a) {
+  dbugprinttok1(a);
+  printf("\n");
+}
+
+void dbugprint2toks(TOKEN a, TOKEN b) {
+  dbugprinttok1(a);
+  dbugprinttok1(b);
+  printf("\n");
+}
+
+void dbugprint3toks(TOKEN a, TOKEN b, TOKEN c) {
+  dbugprinttok1(a);
+  dbugprinttok1(b);
+  dbugprinttok1(c);
+  printf("\n");  
+}
+
+void dbugprint4toks(TOKEN a, TOKEN b, TOKEN c, TOKEN d) {
+  dbugprinttok1(a);
+  dbugprinttok1(b);
+  dbugprinttok1(c);
+  dbugprinttok1(d);
+  printf("\n");  
+}
+
+void dbugprint5toks(TOKEN a, TOKEN b, TOKEN c, TOKEN d, TOKEN e) {
+  dbugprinttok1(a);
+  dbugprinttok1(b);
+  dbugprinttok1(c);
+  dbugprinttok1(d);
+  dbugprinttok1(e);
+  printf("\n");  
+}
+
+void dbugprint6toks(TOKEN a, TOKEN b, TOKEN c, TOKEN d, TOKEN e, TOKEN f) {
+  dbugprinttok1(a);
+  dbugprinttok1(b);
+  dbugprinttok1(c);
+  dbugprinttok1(d);
+  dbugprinttok1(e);
+  dbugprinttok1(f);
+  printf("\n");
+}
+
+void dbugprintsym(SYMBOL sym) {
+  printf("  ");
+  if (sym) {
+    dbprsymbol(sym);
+  }
+  else {
+    printf(" NULL\n");
+  }
+}
+
+void dbugprint1sym(SYMBOL a) {
+  dbugprintsym(a);
+  printf("\n");
+}
+
+void dbugprint2syms(SYMBOL a, SYMBOL b) {
+  dbugprintsym(a);
+  dbugprintsym(b);
+  printf("\n");
+}
+
+void dbugprint3syms(SYMBOL a, SYMBOL b, SYMBOL c) {
+  dbugprintsym(a);
+  dbugprintsym(b);
+  dbugprintsym(c);
+  printf("\n");
+}
+
+void dbugprint4syms(SYMBOL a, SYMBOL b, SYMBOL c, SYMBOL d) {
+  dbugprintsym(a);
+  dbugprintsym(b);
+  dbugprintsym(c);
+  dbugprintsym(d);
+  printf("\n");
+}
+
+void dbugprint5syms(SYMBOL a, SYMBOL b, SYMBOL c, SYMBOL d, SYMBOL e) {
+  dbugprintsym(a);
+  dbugprintsym(b);
+  dbugprintsym(c);
+  dbugprintsym(d);
+  dbugprintsym(e);
+  printf("\n");
+}
+
+void dbugprint6syms(SYMBOL a, SYMBOL b, SYMBOL c, SYMBOL d, SYMBOL e, SYMBOL f) {
+  dbugprintsym(a);
+  dbugprintsym(b);
+  dbugprintsym(c);
+  dbugprintsym(d);
+  dbugprintsym(e);
+  dbugprintsym(f);
+  printf("\n");
+}
+
+void dbugprintlinks(TOKEN idlist) {
+  TOKEN temp = idlist;
+  while (temp) {
+    dbugprintarg(temp);
+    temp = temp->link;
+  }
+  printf("\n");
+}
+
+void dbugprintoperands(TOKEN idlist) {
+  dbugprintlinks(idlist);
+}
+
+
+
+
+
+
+
+
+
+

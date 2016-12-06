@@ -1,0 +1,355 @@
+Symbol table level 1
+ 25997040     complex  TYPE   typ 25996944  lvl  1  siz    16  off     0
+(RECORD (re real)
+        (im real))
+ 25997840         red  CONST  typ INTEGER  val  0
+ 25997936       white  CONST  typ INTEGER  val  1
+ 25998032        blue  CONST  typ INTEGER  val  2
+ 25998224       color  TYPE   typ 25998128  lvl  1  siz     4  off     0
+  0 ..   2
+ 25998640      person  TYPE   typ 26000944  lvl  1  siz    48  off     0
+(RECORD (age integer)
+        (friend (^ person))
+        (location (RECORD (re real)
+                          (im real)))
+        (favorite   0 ..   2)
+        (salary real))
+ 25998832          pp  TYPE   typ 25998736  lvl  1  siz     8  off     0
+(^ person)
+ 26001552           c  VAR    0 typ 25996944  lvl  1  siz    16  off     0
+(RECORD (re real)
+        (im real))
+ 26001648           d  VAR    0 typ 25996944  lvl  1  siz    16  off    16
+(RECORD (re real)
+        (im real))
+ 26002128           i  VAR    0 typ integer  lvl  1  siz     4  off    32
+ 26002224         sum  VAR    0 typ integer  lvl  1  siz     4  off    36
+ 26003216          ac  VAR    0 typ 26003120  lvl  1  siz   160  off    48
+(ARRAY   1 ..  10 (RECORD (re real)
+                          (im real)))
+ 26004432         aco  VAR    0 typ 26004336  lvl  1  siz   120  off   208
+(ARRAY   1 ..  10 (ARRAY   0 ..   2   0 ..   2))
+ 26005168        john  VAR    4 typ 25998736  lvl  1  siz     8  off   328
+(^ person)
+ 26005264        mary  VAR    4 typ 25998736  lvl  1  siz     8  off   336
+(^ person)
+ 26005360        fred  VAR    4 typ 25998736  lvl  1  siz     8  off   344
+(^ person)
+ 26005456         ptr  VAR    4 typ 25998736  lvl  1  siz     8  off   352
+(^ person)
+ 26006448      people  VAR    0 typ 26006352  lvl  1  siz   960  off   368
+(ARRAY   1 ..  20 (RECORD (age integer)
+                          (friend (^ person))
+                          (location (RECORD (re real)
+                                            (im real)))
+                          (favorite   0 ..   2)
+                          (salary real)))
+ token 26022096  OP       program  dtype  0  link 0  operands 25995472
+(program graph1 (progn output)
+                (progn (:= john (funcall new 48))
+                       (:= mary (funcall new 48))
+                       (:= fred (funcall new 48))
+                       (:= (aref (^ john)
+                                 32)
+                           2)
+                       (:= (aref (^ john)
+                                 0)
+                           19)
+                       (progn (label 1)
+                              (:= (aref (^ john)
+                                        8)
+                                  mary))
+                       (:= (aref (^ john)
+                                 40)
+                           4.000000e+04)
+                       (:= (aref (^ john)
+                                 16)
+                           3.000000e+00)
+                       (:= (aref (^ mary)
+                                 0)
+                           21)
+                       (:= (aref (^ mary)
+                                 8)
+                           fred)
+                       (progn (label 0)
+                              (:= (aref (^ fred)
+                                        0)
+                                  20))
+                       (:= (aref (^ fred)
+                                 8)
+                           0)
+                       (:= (aref (^ (aref (^ (aref (^ john)
+                                                   8))
+                                          8))
+                                 24)
+                           4.500000e+00)
+                       (:= (aref ac 96)
+                           (aref (^ john)
+                                 40))
+                       (:= ptr john)
+                       (:= sum 0)
+                       (:= i 1)
+                       (progn (label 2)
+                              (if (<> ptr 0)
+                                  (progn (:= sum (+ sum (aref (^ ptr)
+                                                              0)))
+                                         (:= (aref people (+ -48
+                                                             (* 48
+                                                                i)))
+                                             (aref (^ ptr)
+                                                   0))
+                                         (:= (aref aco (+ -8
+                                                          (* 12
+                                                             i)))
+                                             (aref (^ john)
+                                                   32))
+                                         (:= ptr (aref (^ ptr)
+                                                       8))
+                                         (:= i (+ i 1))
+                                         (goto 2))))
+                       (funcall write 'i = ')
+                       (funcall writelni i)
+                       (funcall write 'Sum of ages = ')
+                       (funcall writelni sum)
+                       (funcall write 'Fred loc im = ')
+                       (funcall writelnf (aref (^ fred)
+                                               24))
+                       (if (< sum 3)
+                           (goto 0))))
+
+###################################################################################################################
+
+EXPECTED OUTPUT:
+  calling graph1
+  i = 4
+  Sum of ages = 60
+  Fred loc im = 4.5
+  exit from graph1
+
+# ---------------- Beginning of Generated Code --------------------
+        .file   "foo"
+        .text
+.globl graph1
+        .type   graph1, @function
+graph1:
+.LFB0:
+  .cfi_startproc
+  pushq %rbp              # save base pointer on stack
+  .cfi_def_cfa_offset 16
+  movq  %rsp, %rbp        # move stack pointer to base pointer
+  .cfi_offset 6, -16
+  .cfi_def_cfa_register 6
+        subq  $1344, %rsp     # make space for this stack frame
+  movq  %rbx, %r9        # save %rbx (callee-saved) in %r9
+# ------------------------- begin Your code -----------------------------
+  
+  new(john);
+    movl  $48,%eax            #  48 -> %eax
+    movl  %eax,%edi           #  %eax -> %edi
+    call  new                 #  new()
+    movq  %rax,-1016(%rbp)    #  %rax -> john
+
+  new(mary);
+    movl  $48,%eax            #  48 -> %eax
+    movl  %eax,%edi           #  %eax -> %edi
+    call  new                 #  new()
+    movq  %rax,-1008(%rbp)    #  %rax -> mary
+
+  new(fred);
+    movl  $48,%eax            #  48 -> %eax
+    movl  %eax,%edi           #  %eax -> %edi
+    call  new                 #  new()
+    movq  %rax,-1000(%rbp)    #  %rax -> fred
+
+  john^.favorite := blue;
+    movl  $2,%eax             #  2 -> %eax
+    movq  -1016(%rbp),%rcx    #  john -> %rcx
+    movl  %eax,32(%rcx)       #  %eax -> ^. [32+%rcx]
+
+  john^.age := 19;
+    movl  $19,%eax            #  19 -> %eax
+    movq  -1016(%rbp),%rcx    #  john -> %rcx
+    movl  %eax,0(%rcx)        #  %eax -> ^. [0+%rcx]
+
+.L1:
+  
+  john^.friend := mary;
+    movq  -1008(%rbp),%rax      #  mary -> %rax
+    movq  -1016(%rbp),%rcx      #  john -> %rcx
+    movq  %rax,8(%rcx)          #  %rax -> ^. [8+%rcx]
+
+  john^.salary := 40000.0;
+    movsd .LC4(%rip),%xmm0      #  40000.000000 -> %xmm0
+    movq  -1016(%rbp),%rax      #  john -> %rax
+    movsd %xmm0,40(%rax)        #  %xmm0 -> ^. [40+%rax]
+
+  john^.location.re := 3;
+    movsd .LC5(%rip),%xmm0      #  3.000000 -> %xmm0
+    movq  -1016(%rbp),%rax      #  john -> %rax
+    movsd %xmm0,16(%rax)        #  %xmm0 -> ^. [16+%rax]
+
+  mary^.age := 21;
+    movl  $21,%eax              #  21 -> %eax
+    movq  -1008(%rbp),%rcx      #  mary -> %rcx
+    movl  %eax,0(%rcx)          #  %eax -> ^. [0+%rcx]
+
+  mary^.friend := fred;
+    movq  -1000(%rbp),%rax      #  fred -> %rax
+    movq  -1008(%rbp),%rcx      #  mary -> %rcx
+    movq  %rax,8(%rcx)          #  %rax -> ^. [8+%rcx]
+
+.L0:
+
+  fred^.age := 20;
+    movl  $20,%eax                #  20 -> %eax
+    movq  -1000(%rbp),%rcx        #  fred -> %rcx
+    movl  %eax,0(%rcx)            #  %eax -> ^. [0+%rcx]
+
+  fred^.friend := nil;
+    movq  $0,%rax                 #  -> 0 -> %rax
+    movq  -1000(%rbp),%rcx        #  fred -> %rcx
+    movq  %rax,8(%rcx)            #  %rax -> ^. [8+%rcx]
+
+  john^.friend^.friend^.location.im := 4.5;
+    movsd .LC6(%rip),%xmm0        #  4.500000 -> %xmm0
+    movq  -1016(%rbp),%rax        #  john -> %rax
+    movq  8(%rax),%rcx            #  ^.[8+%rax] -> %rcx
+    movq  8(%rcx),%rax            #  ^.[8+%rcx] -> %rax
+    movsd %xmm0,24(%rax)          #  %xmm0 -> ^. [24+%rax]
+
+  ac[7].re := john^.salary;
+    movq  -1016(%rbp),%rax        #  john -> %rax
+    movsd 40(%rax),%xmm0          #  ^.[40+%rax] -> %xmm0
+    movl  $96,%eax                #  96 -> %eax
+    cltq                          #  sign-extend
+    movsd %xmm0,-1296(%rbp,%rax)  #  %xmm0 -> ac[%rax]
+
+  ptr := john;
+    movq  -1016(%rbp),%rax        #  john -> %rax
+    movq  %rax,-992(%rbp)         #  %rax -> ptr
+
+  sum := 0;
+    movl  $0,%eax                 #  0 -> %eax
+    movl  %eax,-1308(%rbp)        #  %eax -> sum
+
+  i := 1;
+    movl  $1,%eax                 #  1 -> %eax
+    movl  %eax,-1312(%rbp)        #  %eax -> i
+
+.L2:
+
+  ptr <> nil
+    movq  -992(%rbp),%rax       #  ptr -> %rax
+    movq  $0,%rcx               #  -> 0 -> %rcx
+
+  while ptr <> nil do
+    cmpq  %rcx,%rax             #  compare %rax - %rcx
+    jne .L7                     #  jump if     !=
+    jmp .L8                     #  jump
+
+.L7:
+
+  sum := sum + ptr^.age;
+    movl  -1308(%rbp),%eax      #  sum -> %eax
+    movq  -992(%rbp),%rcx       #  ptr -> %rcx
+    movl  0(%rcx),%edx          #  ^.[0+%rcx] -> %edx
+    addl  %edx,%eax             #  %eax + %edx -> %eax
+    movl  %eax,-1308(%rbp)      #  %eax -> sum
+
+  people[i].age := ptr^.age;
+    movq  -992(%rbp),%rax       #  ptr -> %rax
+    movl  0(%rax),%ecx          #  ^.[0+%rax] -> %ecx
+    movl  $-48,%eax             #  -48 -> %eax
+    movl  $48,%edx              #  48 -> %edx
+    movl  -1312(%rbp),%ebx      #  i -> %ebx
+    imull %ebx,%edx             #  %edx * %ebx -> %edx
+    addl  %edx,%eax             #  %eax + %edx -> %eax
+    cltq                        #  sign-extend
+    movl  %ecx,-976(%rbp,%rax)  #  %ecx -> people[%rax]
+
+  aco[i,white] := john^.favorite;
+    movq  -1016(%rbp),%rax      #  john -> %rax
+    movl  32(%rax),%ecx         #  ^.[32+%rax] -> %ecx
+    movl  $-8,%eax              #  -8 -> %eax
+    movl  $12,%edx              #  12 -> %edx
+    movl  -1312(%rbp),%ebx      #  i -> %ebx
+    imull %ebx,%edx             #  %edx * %ebx -> %edx
+    addl  %edx,%eax             #  %eax + %edx -> %eax
+    cltq                        #  sign-extend
+    movl  %ecx,-1136(%rbp,%rax) #  %ecx -> aco[%rax]
+
+  ptr := ptr^.friend;
+    movq  -992(%rbp),%rax       #  ptr -> %rax
+    movq  8(%rax),%rcx          #  ^.[8+%rax] -> %rcx
+    movq  %rcx,-992(%rbp)       #  %rcx -> ptr
+
+  i := i + 1;
+    movl  -1312(%rbp),%eax      #  i -> %eax
+    movl  $1,%ecx               #  1 -> %ecx
+    addl  %ecx,%eax             #  %eax + %ecx -> %eax
+    movl  %eax,-1312(%rbp)      #  %eax -> i
+
+    jmp .L2                     #  jump
+
+.L8:
+    movl  $.LC9,%edi            #  addr of literal .LC9
+    call  write                 #  write()
+    movl  -1312(%rbp),%eax      #  i -> %eax
+    movl  %eax,%edi             #  %eax -> %edi
+    call  writelni              #  writelni()
+    movl  $.LC10,%edi           #  addr of literal .LC10
+    call  write                 #  write()
+    movl  -1308(%rbp),%eax      #  sum -> %eax
+    movl  %eax,%edi             #  %eax -> %edi
+    call  writelni              #  writelni()
+    movl  $.LC11,%edi           #  addr of literal .LC11
+    call  write                 #  write()
+    movq  -1000(%rbp),%rax      #  fred -> %rax
+    movsd 24(%rax),%xmm0        #  ^.[24+%rax] -> %xmm0
+    call  writelnf              #  writelnf()
+    movl  -1308(%rbp),%eax      #  sum -> %eax
+    movl  $3,%ecx               #  3 -> %ecx
+    cmpl  %ecx,%eax             #  compare %eax - %ecx
+    jl  .L12                    #  jump if     <
+    jmp .L13                    #  jump
+
+.L12:
+  jmp .L0                     #  jump
+
+.L13:
+
+# ----------------------- begin Epilogue code ---------------------------
+  movq  %r9, %rbx        # restore %rbx (callee-saved) from %r9
+        leave
+        ret
+        .cfi_endproc
+.LFE0:
+        .size   graph1, .-graph1
+# ----------------- end Epilogue; Literal data follows ------------------
+        .section        .rodata
+  .align  4
+.LC9:
+  .string "i = "
+  .align  4
+.LC10:
+  .string "Sum of ages = "
+  .align  4
+.LC11:
+  .string "Fred loc im = "
+  .align  8
+.LC4:
+  .long 0     #  40000.000000
+  .long 1088653312
+  .align  8
+.LC5:
+  .long 0     #  3.000000
+  .long 1074266112
+  .align  8
+.LC6:
+  .long 0     #  4.500000
+  .long 1074921472
+
+        .ident  "CS 375 Compiler - Summer 2013"
+
+
+

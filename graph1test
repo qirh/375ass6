@@ -1,0 +1,9 @@
+clear
+make compiler
+echo ''
+compiler < graph1.pas
+compiler < graph1.pas > graph1test.s
+cc driver.c graph1test.s -lm
+echo ''
+a.out
+echo ''

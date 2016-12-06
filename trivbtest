@@ -1,0 +1,9 @@
+clear
+make compiler
+echo ''
+compiler < trivb.pas
+compiler < trivb.pas > trivbtest.s
+cc driver.c trivbtest.s -lm
+echo ''
+a.out
+echo ''

@@ -1,9 +1,9 @@
-# 375ass3
+# 375ass6
 
-assignemnt 5 for CS 375 (compilers)
+assignemnt 6 for CS 375 (compilers)
 by saleh alghusson
 more info here about the assignment:
-https://www.cs.utexas.edu/users/novak/asg-parse.html
+https://www.cs.utexas.edu/users/novak/asg-codegen.html
 
 
 make compiler

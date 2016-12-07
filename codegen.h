@@ -68,5 +68,7 @@ int is_float(int regl, int regr);
 int genop(TOKEN code, int regr, int regl);
 int num_funcalls_tree(TOKEN tok, int num);
 
+void reset_reg();
 void free_reg(int reg);
 void mark_reg_used(int reg);
+void genc(TOKEN code);

@@ -30,7 +30,7 @@
 #include <limits.h>
 #include <float.h>
 
-void genc(TOKEN code);
+
 
 /* Set DEBUGGEN to 1 for debug printouts of code generation */
 #define DEBUGGEN   0
@@ -273,39 +273,40 @@ int genarith(TOKEN code) {
 
 /* Generate code for a Statement from an intermediate-code form */
 void genc(TOKEN code)
-  {  TOKEN tok, lhs, rhs;
-     int reg, offs;
-     SYMBOL sym;
-     if (DEBUGGEN)
-       { printf("genc\n");
-   dbugprinttok(code);
-       };
-     if ( code->tokentype != OPERATOR )
-        { printf("Bad code token");
-    dbugprinttok(code);
-  };
-     switch ( code->whichval )
-       { case PROGNOP:
-     tok = code->operands;
-     while ( tok != NULL )
-       {  genc(tok);
-    tok = tok->link;
-        };
-     break;
-   case ASSIGNOP:                   /* Trivial version: handles I := e */
-     lhs = code->operands;
-     rhs = lhs->link;
-     reg = genarith(rhs);              /* generate rhs into a register */
-     sym = lhs->symentry;              /* assumes lhs is a simple var  */
-     offs = sym->offset - stkframesize; /* net offset of the var   */
-           switch (code->datatype)            /* store value into lhs  */
-             { case INTEGER:
-                 asmst(MOVL, reg, offs, lhs->stringval);
-                 break;
-                 /* ...  */
-             };
-           break;
-   };
+  {  
+    TOKEN tok, lhs, rhs;
+    int reg, offs;
+    SYMBOL sym;
+    if (DEBUGGEN) { 
+      printf("genc\n");
+      dbugprinttok(code);
+    }
+    if ( code->tokentype != OPERATOR ){ 
+      printf("Bad code token");
+      dbugprinttok(code);
+    }
+    switch ( code->whichval ){ 
+      case PROGNOP:
+        tok = code->operands;
+        while ( tok != NULL ){  
+          genc(tok);
+          tok = tok->link;
+        }
+      break;
+       case ASSIGNOP:                   /* Trivial version: handles I := e */
+         lhs = code->operands;
+         rhs = lhs->link;
+         reg = genarith(rhs);              /* generate rhs into a register */
+         sym = lhs->symentry;              /* assumes lhs is a simple var  */
+         offs = sym->offset - stkframesize; /* net offset of the var   */
+               switch (code->datatype)            /* store value into lhs  */
+                 { case INTEGER:
+                     asmst(MOVL, reg, offs, lhs->stringval);
+                     break;
+                     /* ...  */
+                 };
+               break;
+    }
 }
 
 
@@ -313,20 +314,20 @@ void genc(TOKEN code)
 //my funs
 
 int is_symbol_null(char *str) {
-    if (str) {
-        printf("symbol is null (\"%s\")\n", str);
-    }
-    return 0;
+  if (str) 
+    printf("symbol is null (\"%s\")\n", str);
+  
+  return 0;
 }
 
 int token_equal(TOKEN a, TOKEN b) {
-    if (!a || !b) {
-        return 0;
-    }
+    if (!a || !b) 
+      return 0;
+    
 
-    if ((long) a == (long) b) {
-        return 1;
-    }
+    if ((long) a == (long) b) 
+      return 1;
+    
     return 0;
 }
 
@@ -336,123 +337,113 @@ int genop(TOKEN code, int regr, int regl) {
   int which_val = code->whichval;
 
   if (which_val == PLUSOP) {
-      if (is_float(regl, regr)) {
-          asmrr(ADDSD, regr, regl);
-      }
-      else {
-          asmrr(ADDL, regr, regl);
-      }
-      out = regl;
+    if (is_float(regl, regr)) 
+      asmrr(ADDSD, regr, regl);
+    
+    else 
+      asmrr(ADDL, regr, regl);
+    out = regl;
   }
   else if (which_val == MINUSOP) {
-      if (regl > 15 && regl < NUMREG) {
-          asmfneg(regl, getreg(REAL));
-          regr = regl;
-      }
-      else if (is_float(regl, regr)) {
-          asmrr(SUBSD, regr, regl);
-      }
-      else {
-          asmrr(SUBL, regr, regl);
-      }
-      out = regl;
+    if (regl > 15 && regl < NUMREG) {
+        asmfneg(regl, getreg(REAL));
+        regr = regl;
+    }
+    else if (is_float(regl, regr)) 
+      asmrr(SUBSD, regr, regl);
+    
+    else 
+      asmrr(SUBL, regr, regl);
+    
+    out = regl;
   }
   else if (which_val == TIMESOP) {
-      if (is_float(regl, regr)) {
-          asmrr(MULSD, regr, regl);
-      }
-      else {
-          asmrr(IMULL, regr, regl);
-      }
-      out = regl;
+    if (is_float(regl, regr)) 
+      asmrr(MULSD, regr, regl);
+    
+    else 
+      asmrr(IMULL, regr, regl);
+
+    out = regl;
   }
   else if (which_val == DIVIDEOP) {
-      if (is_float(regl, regr)) {
-          asmrr(DIVSD, regr, regl);
-      }
-      else {
-          asmrr(DIVL, regr, regl);
-      }
-      out = regl;
+    if (is_float(regl, regr)) 
+        asmrr(DIVSD, regr, regl);
+    else 
+        asmrr(DIVL, regr, regl);
+    out = regl;
   }
   else if (which_val == EQOP) {
-      out = nextlabel++;
-      asmrr(CMPL, regr, regl);
-      asmjump(JE, out);
+    out = nextlabel++;
+    asmrr(CMPL, regr, regl);
+    asmjump(JE, out);
   }
   else if (which_val == NEOP) {
-      out = nextlabel++;
-      asmrr(CMPQ, regr, regl);
-      asmjump(JNE, out);
+    out = nextlabel++;
+    asmrr(CMPQ, regr, regl);
+    asmjump(JNE, out);
   }
   else if (which_val == LTOP) {
-      out = nextlabel++;
-      asmrr(CMPL, regr, regl);
-      asmjump(JL, out);
+    out = nextlabel++;
+    asmrr(CMPL, regr, regl);
+    asmjump(JL, out);
   }
   else if (which_val == LEOP) {
-      out = nextlabel++;
-      asmrr(CMPL, regr, regl);
-      asmjump(JLE, out);
+    out = nextlabel++;
+    asmrr(CMPL, regr, regl);
+    asmjump(JLE, out);
   }
   else if (which_val == GEOP) {
-      out = nextlabel++;
-      asmrr(CMPL, regr, regl);
-      asmjump(JGE, out);
+    out = nextlabel++;
+    asmrr(CMPL, regr, regl);
+    asmjump(JGE, out);
   }
   else if (which_val == GTOP) {
-      out = nextlabel++;
-      asmrr(CMPL, regr, regl);
-      asmjump(JG, out);
+    out = nextlabel++;
+    asmrr(CMPL, regr, regl);
+    asmjump(JG, out);
   }
   else if (which_val == POINTEROP) {
-      prv_ptr_offset = code->link->intval;
+    prv_ptr_offset = code->link->intval;
 
-      if (ref_stop_at && nested_ref && token_equal(ref_stop_at, code)) {
-          asmstr(MOVSD, saved_regr_num, code->link->intval, regl, "^. ");
-      }
+    if (ref_stop_at && nested_ref && token_equal(ref_stop_at, code)) {
+        asmstr(MOVSD, saved_regr_num, code->link->intval, regl, "^. ");
+    }
 
-      if (!nested_ref) {
-          saved_regr = code->operands;
-      }
-      else {
-          saved_regr = code->link;
-      }
-
-      out = regl;
+    if (!nested_ref) {
+        saved_regr = code->operands;
+    }
+    else {
+        saved_regr = code->link;
+    }
+    out = regl;
   }
   else if (which_val == FUNCALLOP) {
 
       if (funcall) {
-
-          if (num_funcalls > 1) {
-              saved_regs[num_processed] = saved_reg;
-              num_processed++;
-              if (num_processed == 1) {
-                  asmcall(funcall->stringval);
-                  asmsttemp(saved_reg);
-              }
-              else if (num_processed > 0 && num_processed < num_funcalls) {
-                  // do nothing
-              }
-              else {
-                  asmcall(funcall->stringval);
-                  asmldtemp(saved_reg);
-              }               
+        if (num_funcalls > 1) {
+          saved_regs[num_processed] = saved_reg;
+          num_processed++;
+          if (num_processed == 1) {
+            asmcall(funcall->stringval);
+            asmsttemp(saved_reg);
           }
-          else if (strcmp(funcall->stringval, "new") == 0) {
-              asmrr(MOVL, regr, EDI);
-              asmcall(funcall->stringval);
-          }
+          else if (num_processed > 0 && num_processed < num_funcalls) {}
           else {
-              asmcall(funcall->stringval);
-          }
-
-          funcall = NULL;
+            asmcall(funcall->stringval);
+            asmldtemp(saved_reg);
+          }               
+        }
+        else if (strcmp(funcall->stringval, "new") == 0) {
+          asmrr(MOVL, regr, EDI);
+          asmcall(funcall->stringval);
+        }
+        else {
+          asmcall(funcall->stringval);
+        }
+        funcall = NULL;
       }
-      else {
-          // ?????????????????????????????
-      }
+      else {}
 
       out = regl;
   }
@@ -462,85 +453,81 @@ int genop(TOKEN code, int regr, int regl) {
           asmldr(MOVQ, code->operands->link->intval, regl, regr, "^.");
       }
       else {
-          if (prv_reg_id > -1) {
-              int temp = regr;
-              if (prv_reg_id > -1 && prv_reg_id < 16) {
-                  if (prv_reg_id == regr) {
-                      regr = getreg(INTEGER);
-                      free_reg(temp);
+        if (prv_reg_id > -1) {
+            int temp = regr;
+            if (prv_reg_id > -1 && prv_reg_id < 16) {
+              if (prv_reg_id == regr) {
+                regr = getreg(INTEGER);
+                free_reg(temp);
+              }
+
+              if (prv_ptr && prv_ptr_reg > -1) {
+
+                int found = 0;
+                SYMBOL temp0, temp1, temp2, temp3, temp4, temp5, typsym;
+                temp0 = searchst(prv_ptr->stringval);
+                typsym = NULL;
+
+                if (!temp0) {
+                    return is_symbol_null(code->stringval);
+                }
+
+                temp1 = searchst(temp0->link->namestring);
+
+                if (!temp1) {
+                    return is_symbol_null(code->stringval);
+                }
+
+                if (temp1->datatype->kind == ARRAYSYM) {
+                    typsym = temp1->datatype;
+                    while (typsym && typsym->kind == ARRAYSYM) {
+                        typsym = typsym->datatype;
+                    }
+
+                    if (!typsym) {
+                        return is_symbol_null(code->stringval);
+                    }
+
+                    temp2 = typsym->datatype;
+                    if (temp2 && temp2->kind == RECORDSYM) {
+                        temp3 = temp2->datatype;
+
+                        while (temp3 && !found) {
+                            if (temp3->offset == prv_ptr_offset) {
+                                found = 1;
+
+                                if (temp3->size > basicsizes[INTEGER]) {
+                                    asmldr(MOVQ, code->operands->link->intval, regl, regr, "^.");
+                                }
+                                else {
+                                    asmldr(MOVL, code->operands->link->intval, regl, regr, "^.");
+                                }
+                            }
+                            temp3 = temp3->link;
+                        }
+                    }
+
+                  }
+                  else {}
+
+                  if (!found) {
+                    asmldr(MOVL, code->operands->link->intval, regl, regr, "^.");
                   }
 
-                  if (prv_ptr && prv_ptr_reg > -1) {
-
-                      int found = 0;
-                      SYMBOL temp0, temp1, temp2, temp3, temp4, temp5, typsym;
-                      temp0 = searchst(prv_ptr->stringval);
-                      typsym = NULL;
-
-                      if (!temp0) {
-                          return is_symbol_null(code->stringval);
-                      }
-
-                      temp1 = searchst(temp0->link->namestring);
-
-                      if (!temp1) {
-                          return is_symbol_null(code->stringval);
-                      }
-
-                      if (temp1->datatype->kind == ARRAYSYM) {
-                          typsym = temp1->datatype;
-                          while (typsym && typsym->kind == ARRAYSYM) {
-                              typsym = typsym->datatype;
-                          }
-
-                          if (!typsym) {
-                              return is_symbol_null(code->stringval);
-                          }
-
-                          temp2 = typsym->datatype;
-                          if (temp2 && temp2->kind == RECORDSYM) {
-                              temp3 = temp2->datatype;
-
-                              while (temp3 && !found) {
-                                  if (temp3->offset == prv_ptr_offset) {
-                                      found = 1;
-
-                                      if (temp3->size > basicsizes[INTEGER]) {
-                                          asmldr(MOVQ, code->operands->link->intval, regl, regr, "^.");
-                                      }
-                                      else {
-                                          asmldr(MOVL, code->operands->link->intval, regl, regr, "^.");
-                                      }
-                                  }
-                                  temp3 = temp3->link;
-                              }
-                          }
-
-                      }
-                      else {
-
-                      }
-
-                      // probably broken
-                      if (!found) {
-                          asmldr(MOVL, code->operands->link->intval, regl, regr, "^.");
-                      }
-
-                      prv_ptr_reg = -1;
-                  }
-                  else {
-                      asmldr(MOVL, code->operands->link->intval, regl, regr, "^.");                        
-                  }
-
+                  prv_ptr_reg = -1;
               }
               else {
-                  if (prv_reg_id == regr) {
-                      regr = getreg(REAL);
-                      free_reg(temp);
-                  }
-                  asmldr(MOVSD, code->operands->link->intval, regl, regr, "^.");
+                asmldr(MOVL, code->operands->link->intval, regl, regr, "^.");                        
               }
-              // else // WHAT ABOUT IF LHS IS > 15 ???????????????????????????????????????????????????
+
+            }
+            else {
+              if (prv_reg_id == regr) {
+                regr = getreg(REAL);
+                free_reg(temp);
+              }
+              asmldr(MOVSD, code->operands->link->intval, regl, regr, "^.");
+            }
           }
           else {
               free_reg(regr);
@@ -582,11 +569,17 @@ void free_reg(int reg) {
   }
   reg_occ[reg] = 0;
 }
+void reset_reg() {
+  int i;
+  for (i = 0; i < NUMREG; i++) {
+    reg_occ[i] = 0;
+  }
+}
 void mark_reg_used(int reg) {
-    if (reg < 0 || reg >= NUMREG) {
-        return;
-    }
-    reg_occ[reg] = 1;    
+  if (reg < 0 || reg >= NUMREG) {
+    return;
+  }
+  reg_occ[reg] = 1;    
 }
 int is_float(int regl, int regr) {
     if ((regl >= INTREG && regl < NUMREG) || 

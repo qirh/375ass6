@@ -61,6 +61,12 @@ int genaref(TOKEN code, int storereg);
 
 
 //mycode
-#define false = 0
-#define true = !false
 
+int is_symbol_null(char *str);
+int token_equal(TOKEN a, TOKEN b);
+int is_float(int regl, int regr);
+int genop(TOKEN code, int regr, int regl);
+int num_funcalls_tree(TOKEN tok, int num);
+
+void free_reg(int reg);
+void mark_reg_used(int reg);

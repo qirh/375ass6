@@ -14,8 +14,8 @@ graph1:
         subq	$32, %rsp 	  # make space for this stack frame
 	movq	%rbx, %r9        # save %rbx (callee-saved) in %r9
 # ------------------------- begin Your code -----------------------------
-	movl	$3,%eax         	#  3 -> %eax
-	movl	%eax,-32(%rbp)     	#  %eax -> i
+	movl	$3,%xmm0         	#  3 -> %xmm0
+	movl	%xmm0,-32(%rbp)     	#  %xmm0 -> i
 # ----------------------- begin Epilogue code ---------------------------
 	movq	%r9, %rbx        # restore %rbx (callee-saved) from %r9
         leave

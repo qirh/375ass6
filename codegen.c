@@ -77,6 +77,11 @@ void gencode(TOKEN pcode, int varsize, int maxlabel)
 /* Need a type parameter or two versions for INTEGER or REAL */
 int getreg(int kind)
   {
+    if (DEBUGGEN) { 
+    printf("getreg\n");
+    printf("%i\n", kind);
+    }
+
     int i = 0;
     int end = INTREG;
     if (kind !=  INTEGER && kind != POINTER) {
@@ -131,9 +136,6 @@ int genarith(TOKEN code) {
 
   return reg;
 }
-
-
-
 
 /* Generate code for a Statement from an intermediate-code form */
 void genc(TOKEN code)

@@ -58,3 +58,9 @@ int moveop(TOKEN code);
 /* If storereg < 0, generates a load and returns register number;
    else, generates a store from storereg. */
 int genaref(TOKEN code, int storereg);
+
+
+//mycode
+#define false = 0
+#define true = !false
+

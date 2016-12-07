@@ -133,6 +133,8 @@ int genarith(TOKEN code) {
 }
 
 
+
+
 /* Generate code for a Statement from an intermediate-code form */
 void genc(TOKEN code)
   {  TOKEN tok, lhs, rhs;

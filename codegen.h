@@ -70,5 +70,6 @@ int num_funcalls_tree(TOKEN tok, int num);
 
 void reset_reg();
 void free_reg(int reg);
+void mark_reg_unused(int reg);
 void mark_reg_used(int reg);
 void genc(TOKEN code);
